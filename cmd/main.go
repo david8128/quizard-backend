@@ -3,8 +3,8 @@ package main
 import (
 	"net/http"
 
-	"mi-backend/pkg/crm"
-	"mi-backend/pkg/tasks"
+	"github.com/david8128/quizard-backend/pkg/crm"
+	"github.com/david8128/quizard-backend/pkg/tasks"
 
 	"github.com/gorilla/mux"
 )
@@ -20,11 +20,7 @@ func main() {
 	r.HandleFunc("/questions/{id}", crm.DeleteQuestion).Methods("DELETE")
 
 	// Rutas para las tareas de validación
-	r.HandleFunc("/tasks", tasks.GetTasks).Methods("GET")
-	r.HandleFunc("/tasks/{id}", tasks.GetTask).Methods("GET")
-	r.HandleFunc("/tasks", tasks.CreateTask).Methods("POST")
-	r.HandleFunc("/tasks/{id}", tasks.UpdateTask).Methods("PUT")
-	r.HandleFunc("/tasks/{id}", tasks.DeleteTask).Methods("DELETE")
+	r.HandleFunc("/check_config", tasks.CheckConfig).Methods("POST")
 
 	http.ListenAndServe(":8000", r)
 }

@@ -1,4 +1,4 @@
-module mi-backend
+module github.com/david8128/quizard-backend
 
 go 1.16
 

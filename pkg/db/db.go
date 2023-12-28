@@ -17,23 +17,23 @@ const (
 
 var db *sql.DB
 
-func InitDB() error {
+func InitDB() (*sql.DB, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s",
 		host, port, user, password, dbname)
 
 	var err error
 	db, err = sql.Open("postgres", psqlInfo)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = db.Ping()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	fmt.Println("Successfully connected!")
-	return nil
+	return db, nil
 }
 
 func GetDB() *sql.DB {

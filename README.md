@@ -1,4 +1,4 @@
-# Mi-Backend
+# github.com/david8128/quizard-backend
 
 Este proyecto es un backend desarrollado en Go que se conecta a una base de datos PostgreSQL. Contiene un CRM para manejar preguntas y un controlador para ejecutar tareas de validación a través de scripts de bash.
 
