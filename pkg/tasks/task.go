@@ -1,7 +1,9 @@
 package tasks
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -11,22 +13,24 @@ import (
 
 type Task struct {
 	Name   string
-	Script string
+	TaskID string
 }
 
-func NewTask(name string, script string) *Task {
+func NewTask(name string, taskid string) *Task {
 	return &Task{
 		Name:   name,
-		Script: script,
+		TaskID: taskid,
 	}
 }
 
 func (t *Task) Run() error {
-	cmd := exec.Command("/bin/bash", t.Script)
+
+	scriptPath := fmt.Sprintf("%s/../../scripts/task%s-validation.sh", os.Getenv("PWD"), t.TaskID)
+	cmd := exec.Command("/bin/bash", scriptPath)
 
 	err := cmd.Run()
 	if err != nil {
-		log.Printf("Error running task %s: %v", t.Name, err)
+		log.Panicf("Error running task %s: %v", t.Name, scriptPath)
 		return err
 	}
 
@@ -39,10 +43,20 @@ func CheckConfig(w http.ResponseWriter, r *http.Request) {
 	// Return an error if the configuration is invalid
 
 	// Check if the script exists for the given task ID
-	taskID := r.FormValue("taskID")
-	scriptPath := fmt.Sprintf("/path/to/scripts/%s.sh", taskID)
+	var data map[string]interface{}
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		panic(err)
+	}
+	TaskID := data["TaskId"].(string)
+	scriptPath := fmt.Sprintf("%s/../../scripts/task%s-validation.sh", os.Getenv("PWD"), TaskID)
 	if _, err := os.Stat(scriptPath); os.IsNotExist(err) {
-		http.Error(w, "Not valid conf", http.StatusBadRequest)
+		error_msg := fmt.Sprintf("Doesn't exists: %v with ID %v", scriptPath, data["TaskID"])
+		http.Error(w, error_msg, http.StatusBadRequest)
 		return
 	}
 
@@ -50,7 +64,8 @@ func CheckConfig(w http.ResponseWriter, r *http.Request) {
 	cmd := exec.Command("/bin/bash", scriptPath)
 	output, err := cmd.Output()
 	if err != nil {
-		http.Error(w, "Not valid conf", http.StatusBadRequest)
+		error_msg := fmt.Sprintf("Error running task: %v", scriptPath)
+		http.Error(w, error_msg, http.StatusBadRequest)
 		return
 	}
 
@@ -59,6 +74,6 @@ func CheckConfig(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Accepted"))
 	} else {
-		http.Error(w, "Not valid conf", http.StatusBadRequest)
+		http.Error(w, "Doesn't contains success", http.StatusBadRequest)
 	}
 }

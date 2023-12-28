@@ -1,0 +1,4 @@
+CREATE TABLE questions (
+  ID SERIAL PRIMARY KEY,
+  Content VARCHAR NOT NULL
+);

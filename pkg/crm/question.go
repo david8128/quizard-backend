@@ -22,10 +22,30 @@ type QuestionStore struct {
 	db *sql.DB
 }
 
-func NewQuestionStore(db *sql.DB) *QuestionStore {
+func NewQuestionStore(database *sql.DB) *QuestionStore {
+
+	db, err := sql.Open("postgres", "host=localhost port=5432 user=your_username password=your_password dbname=your_database_name sslmode=disable")
+	if err != nil {
+		error_msg := fmt.Sprintf("Failed to open database: %v", err)
+		panic(error_msg)
+	}
+
+	err = db.Ping()
+	if err != nil {
+		error_msg := fmt.Sprintf("Failed to ping database: %v", err)
+		panic(error_msg)
+	}
+
+	if db == nil {
+		panic("db is nil")
+	}
 	return &QuestionStore{
 		db: db,
 	}
+}
+
+func (store *QuestionStore) Close() {
+	store.db.Close()
 }
 
 func (store *QuestionStore) GetQuestionsHandler(w http.ResponseWriter, r *http.Request) {
@@ -72,9 +92,8 @@ func (store *QuestionStore) GetQuestion(id int) (*Question, error) {
 	return &question, nil
 }
 
-func (store *QuestionStore) CreateQuestion(content string) (*Question, error) {
-	var id int
-	err := store.db.QueryRow("INSERT INTO questions(content) VALUES($1) RETURNING id", content).Scan(&id)
+func (store *QuestionStore) CreateQuestion(id int, content string) (*Question, error) {
+	err := store.db.QueryRow("INSERT INTO questions(content) VALUES($1) RETURNING ID", content).Scan(&id)
 	if err != nil {
 		return nil, fmt.Errorf("could not create question: %v", err)
 	}
@@ -99,17 +118,20 @@ func (store *QuestionStore) DeleteQuestion(id int) error {
 
 func GetQuestions(w http.ResponseWriter, r *http.Request) {
 	questionStore := NewQuestionStore(db.GetDB())
+	defer questionStore.Close()
 	questionStore.GetQuestionsHandler(w, r)
 }
 
 func GetQuestion(w http.ResponseWriter, r *http.Request) {
 	questionStore := NewQuestionStore(db.GetDB())
+	defer questionStore.Close()
 	params := mux.Vars(r)
 	id := params["id"]
 
 	questionID, err := strconv.Atoi(id)
 	if err != nil {
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		body := fmt.Sprintf("Invalid ID: %v, and id is %s, params: %v", err, id, params["id"])
+		http.Error(w, body, http.StatusBadRequest)
 		return
 	}
 
@@ -125,20 +147,28 @@ func GetQuestion(w http.ResponseWriter, r *http.Request) {
 
 func CreateQuestion(w http.ResponseWriter, r *http.Request) {
 	questionStore := NewQuestionStore(db.GetDB())
-	content := r.FormValue("content") // Get the question content from the request
+	defer questionStore.Close()
 
-	question, err := questionStore.CreateQuestion(content)
+	var question Question
+	err := json.NewDecoder(r.Body).Decode(&question)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	createdQuestion, err := questionStore.CreateQuestion(question.ID, question.Content)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(question)
+	json.NewEncoder(w).Encode(createdQuestion)
 }
 
 func UpdateQuestion(w http.ResponseWriter, r *http.Request) {
 	questionStore := NewQuestionStore(db.GetDB())
+	defer questionStore.Close()
 	params := mux.Vars(r)
 	id := params["id"]
 	content := r.FormValue("content") // Get the question content from the request
@@ -160,6 +190,7 @@ func UpdateQuestion(w http.ResponseWriter, r *http.Request) {
 
 func DeleteQuestion(w http.ResponseWriter, r *http.Request) {
 	questionStore := NewQuestionStore(db.GetDB())
+	defer questionStore.Close()
 	params := mux.Vars(r)
 	id := params["id"]
 

@@ -8,6 +8,6 @@ echo "Iniciando la validación..."
 # Aquí es donde iría tu lógica de validación
 # Por ejemplo, podrías verificar la existencia de ciertos archivos o procesos
 
-echo "Validación completada exitosamente"
+echo "Validación completada success fully"
 
 exit 0

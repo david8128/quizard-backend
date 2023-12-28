@@ -6,10 +6,32 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+
+	"github.com/gorilla/mux"
 )
 
+func InitializeDB() (*sql.DB, error) {
+	db, err := sql.Open("postgres", "host=localhost port=5432 user=your_username password=your_password dbname=your_database_name sslmode=disable")
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
 func TestCreateQuestionAndGetQuestion(t *testing.T) {
+
+	r := mux.NewRouter()
+
+	// Rutas para el CRM
+	r.HandleFunc("/questions/{id}", GetQuestion).Methods("GET")
+
 	question := Question{
 		ID:      1,
 		Content: "What is your name?",
@@ -35,28 +57,12 @@ func TestCreateQuestionAndGetQuestion(t *testing.T) {
 
 	// Check the response status code
 	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
+		t.Errorf("handler returned wrong status code: response %s got %v want %v",
+			rr.Body.String(), status, http.StatusOK)
 	}
 
 	// Check the response body
 	expected := `{"message": "Question created successfully"}`
-	// Initialize the QuestionStore
-	questionStore := &QuestionStore{}
-
-	db, err := sql.Open("postgres", "user=pqgotest dbname=pqgotest")
-	if err != nil {
-		t.Fatalf("Failed to open database: %v", err)
-	}
-	defer db.Close()
-
-	err = db.Ping()
-	if err != nil {
-		t.Fatalf("Failed to ping database: %v", err)
-	}
-
-	// Set the db field of questionStore
-	questionStore.db = db
 
 	req, err = http.NewRequest("GET", "/questions/1", nil)
 	if err != nil {
@@ -67,17 +73,20 @@ func TestCreateQuestionAndGetQuestion(t *testing.T) {
 	handler = http.HandlerFunc(GetQuestion)
 
 	// Serve the HTTP request to the recorder
-	handler.ServeHTTP(rr, req)
+	r.ServeHTTP(rr, req)
 
 	// Check the response status code
 	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
+		t.Errorf("handler returned wrong status code: response %s got %v want %v",
+			rr.Body.String(), status, http.StatusOK)
 	}
 
 	// Check the response body
-	expected = `{"id": 1, "question": "What is your name?"}`
-	if rr.Body.String() != expected {
+
+	expected = `{"ID":1,"Content":"What is your name?"}`
+	t.Logf("%x\n", strings.TrimSuffix(rr.Body.String(), "\n"))
+	t.Logf("%x\n", expected)
+	if strings.TrimSuffix(rr.Body.String(), "\n") != expected {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			rr.Body.String(), expected)
 	}
