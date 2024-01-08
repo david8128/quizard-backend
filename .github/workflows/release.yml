@@ -11,6 +11,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           token: ${{ secrets.MY_GITHUB_TOKEN }}
+          fetch-depth: 0  # Add this line
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
