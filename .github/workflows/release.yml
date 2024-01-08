@@ -24,13 +24,6 @@ jobs:
         id: check_tags
         run: |
           echo ::set-output name=tag::$(git tag --points-at HEAD)
-      - name: Create initial tag
-        if: steps.check_tags.outputs.tag == ''
-        run: |
-          git config --local user.name "GitHub Actions"
-          git config --local user.email "actions@github.com"
-          git tag v0.1.0
-          git push origin v0.1.0
       - name: Commit changes
         run: |
           ls completions
