@@ -15,9 +15,11 @@ jobs:
           go-version: 1.21
       - name: Install goreleaser
         run: |
-          curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh
+          wget https://github.com/goreleaser/goreleaser/releases/download/v0.182.1/goreleaser_Linux_x86_64.tar.gz
+          tar -xvf goreleaser_Linux_x86_64.tar.gz
+          sudo mv goreleaser /usr/local/bin/
       - name: Run goreleaser
         run: |
           git config --local user.name "GitHub Actions"
           git config --local user.email "actions@github.com"
-          ./goreleaser release --rm-dist --skip-publish
+          goreleaser release --rm-dist --skip-publish
