@@ -41,8 +41,7 @@ jobs:
           git diff -p
       - name: Commit changes
         run: |
-          git restore --staged LICENSE.md
-          git restore --staged README.md
+          git reset --hard HEAD
       - name: Run goreleaser
         run: |
           git config --local user.name "GitHub Actions"
