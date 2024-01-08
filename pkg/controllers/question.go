@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/david8128/quizard-backend/pkg/db"
 	"github.com/david8128/quizard-backend/pkg/models"
 	"github.com/gorilla/mux"
 )
@@ -24,7 +25,12 @@ type QuestionController struct {
 }
 
 func NewQuestionController() *QuestionController {
-	questionStore := models.NewQuestionStore()
+	db, err := db.InitDB()
+	if err != nil {
+		panic("Error initializing DB")
+	}
+
+	questionStore := models.NewQuestionStore(db)
 
 	return &QuestionController{
 		questionStore: questionStore,

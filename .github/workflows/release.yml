@@ -27,25 +27,25 @@ jobs:
       - name: Tag commit
         run: git tag v${{ steps.gitversion.outputs.semVer }}
 
-      - name: Push tag
-        run: git push origin v${{ steps.gitversion.outputs.semVer }}
-      - name: Install goreleaser
-        run: |
-          wget https://github.com/goreleaser/goreleaser/releases/download/v0.182.1/goreleaser_Linux_x86_64.tar.gz
-          tar -xvf goreleaser_Linux_x86_64.tar.gz
-          sudo mv goreleaser /usr/local/bin/
-      - name: Check if there are any tags
-        id: check_tags
-        run: |
-          git tag --points-at HEAD
-          git diff -p
-      - name: Commit changes
-        run: |
-          git reset --hard HEAD
-      - name: Install dependencies
-        run: go mod download
-      - name: Run goreleaser
-        run: |
-          git config --local user.name "GitHub Actions"
-          git config --local user.email "actions@github.com"
-          goreleaser release --rm-dist --skip-publish
+      # - name: Push tag
+      #   run: git push origin v${{ steps.gitversion.outputs.semVer }}
+      # - name: Install goreleaser
+      #   run: |
+      #     wget https://github.com/goreleaser/goreleaser/releases/download/v0.182.1/goreleaser_Linux_x86_64.tar.gz
+      #     tar -xvf goreleaser_Linux_x86_64.tar.gz
+      #     sudo mv goreleaser /usr/local/bin/
+      # - name: Check if there are any tags
+      #   id: check_tags
+      #   run: |
+      #     git tag --points-at HEAD
+      #     git diff -p
+      # - name: Commit changes
+      #   run: |
+      #     git reset --hard HEAD
+      # - name: Install dependencies
+      #   run: go mod download
+      # - name: Run goreleaser
+      #   run: |
+      #     git config --local user.name "GitHub Actions"
+      #     git config --local user.email "actions@github.com"
+      #     goreleaser release --rm-dist --skip-publish
