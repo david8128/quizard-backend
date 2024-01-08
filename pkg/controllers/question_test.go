@@ -1,4 +1,4 @@
-package crm
+package controllers
 
 import (
 	"bytes"
