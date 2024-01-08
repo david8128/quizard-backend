@@ -1,4 +1,4 @@
-module github.com/david8128/quizard-backend
+module github.com/david8128/quizard-backend/cmd
 
 go 1.21
 
