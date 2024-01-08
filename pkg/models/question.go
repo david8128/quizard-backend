@@ -1,4 +1,4 @@
-package crm
+package models
 
 import (
 	"database/sql"
