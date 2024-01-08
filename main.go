@@ -3,7 +3,8 @@ package main
 import (
 	"net/http"
 
-	"github.com/david8128/quizard-backend/pkg/crm"
+	crm "github.com/david8128/quizard-backend/pkg/controller"
+	"github.com/david8128/quizard-backend/pkg/model"
 	"github.com/david8128/quizard-backend/pkg/tasks"
 
 	"github.com/gorilla/mux"
