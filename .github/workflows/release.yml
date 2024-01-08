@@ -41,8 +41,8 @@ jobs:
           git diff -p
       - name: Commit changes
         run: |
-          git add .
-          git commit -m "Commit changes before running goreleaser" || echo "No changes to commit"
+          git restore --staged LICENSE.md
+          git restore --staged README.md
       - name: Run goreleaser
         run: |
           git config --local user.name "GitHub Actions"
