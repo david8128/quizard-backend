@@ -14,8 +14,8 @@ import (
 )
 
 type Question struct {
-	ID      int
-	Content string
+	ID      int    `json:"id"`
+	Content string `json:"content"`
 }
 
 type QuestionStore struct {
@@ -92,7 +92,8 @@ func (store *QuestionStore) GetQuestion(id int) (*Question, error) {
 	return &question, nil
 }
 
-func (store *QuestionStore) CreateQuestion(id int, content string) (*Question, error) {
+func (store *QuestionStore) CreateQuestion(content string) (*Question, error) {
+	var id int
 	err := store.db.QueryRow("INSERT INTO questions(content) VALUES($1) RETURNING ID", content).Scan(&id)
 	if err != nil {
 		return nil, fmt.Errorf("could not create question: %v", err)
@@ -116,13 +117,13 @@ func (store *QuestionStore) DeleteQuestion(id int) error {
 	return nil
 }
 
-func GetQuestions(w http.ResponseWriter, r *http.Request) {
+func GetQuestionsHandler(w http.ResponseWriter, r *http.Request) {
 	questionStore := NewQuestionStore(db.GetDB())
 	defer questionStore.Close()
 	questionStore.GetQuestionsHandler(w, r)
 }
 
-func GetQuestion(w http.ResponseWriter, r *http.Request) {
+func GetQuestionHandler(w http.ResponseWriter, r *http.Request) {
 	questionStore := NewQuestionStore(db.GetDB())
 	defer questionStore.Close()
 	params := mux.Vars(r)
@@ -145,7 +146,7 @@ func GetQuestion(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(question)
 }
 
-func CreateQuestion(w http.ResponseWriter, r *http.Request) {
+func CreateQuestionHandler(w http.ResponseWriter, r *http.Request) {
 	questionStore := NewQuestionStore(db.GetDB())
 	defer questionStore.Close()
 
@@ -156,7 +157,7 @@ func CreateQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdQuestion, err := questionStore.CreateQuestion(question.ID, question.Content)
+	createdQuestion, err := questionStore.CreateQuestion(question.Content)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -166,7 +167,7 @@ func CreateQuestion(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(createdQuestion)
 }
 
-func UpdateQuestion(w http.ResponseWriter, r *http.Request) {
+func UpdateQuestionHandler(w http.ResponseWriter, r *http.Request) {
 	questionStore := NewQuestionStore(db.GetDB())
 	defer questionStore.Close()
 	params := mux.Vars(r)
@@ -188,7 +189,7 @@ func UpdateQuestion(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func DeleteQuestion(w http.ResponseWriter, r *http.Request) {
+func DeleteQuestionHandler(w http.ResponseWriter, r *http.Request) {
 	questionStore := NewQuestionStore(db.GetDB())
 	defer questionStore.Close()
 	params := mux.Vars(r)
