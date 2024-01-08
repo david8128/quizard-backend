@@ -23,6 +23,12 @@ jobs:
       - name: Use GitVersion
         id: gitversion
         uses: gittools/actions/gitversion/execute@v0.9.7
+
+      - name: Tag commit
+        run: git tag ${{ steps.gitversion.outputs.semVer }}
+
+      - name: Push tag
+        run: git push origin ${{ steps.gitversion.outputs.semVer }}
       - name: Install goreleaser
         run: |
           wget https://github.com/goreleaser/goreleaser/releases/download/v0.182.1/goreleaser_Linux_x86_64.tar.gz
@@ -31,7 +37,8 @@ jobs:
       - name: Check if there are any tags
         id: check_tags
         run: |
-          echo ::set-output name=tag::$(git tag --points-at HEAD)
+          git tag --points-at HEAD
+          git diff -p
       - name: Run goreleaser
         run: |
           git config --local user.name "GitHub Actions"
