@@ -31,6 +31,13 @@ jobs:
           git config --local user.email "actions@github.com"
           git tag v0.1.0
           git push origin v0.1.0
+      - name: Commit changes
+        run: |
+          ls completions
+          git config --local user.name "GitHub Actions"
+          git config --local user.email "actions@github.com"
+          git add .
+          git commit -m "Commit changes" || echo "No changes to commit"
       - name: Run goreleaser
         run: |
           git config --local user.name "GitHub Actions"
