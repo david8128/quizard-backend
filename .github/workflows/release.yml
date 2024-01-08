@@ -25,10 +25,10 @@ jobs:
         uses: gittools/actions/gitversion/execute@v0.9.7
 
       - name: Tag commit
-        run: git tag ${{ steps.gitversion.outputs.semVer }}
+        run: git tag v${{ steps.gitversion.outputs.semVer }}
 
       - name: Push tag
-        run: git push origin ${{ steps.gitversion.outputs.semVer }}
+        run: git push origin v${{ steps.gitversion.outputs.semVer }}
       - name: Install goreleaser
         run: |
           wget https://github.com/goreleaser/goreleaser/releases/download/v0.182.1/goreleaser_Linux_x86_64.tar.gz
