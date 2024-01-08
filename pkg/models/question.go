@@ -5,12 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"github.com/gorilla/mux"
-
-	"strconv"
-
-	db "github.com/david8128/quizard-backend/pkg/db"
 )
 
 type Question struct {
@@ -115,96 +109,4 @@ func (store *QuestionStore) DeleteQuestion(id int) error {
 		return fmt.Errorf("could not delete question: %v", err)
 	}
 	return nil
-}
-
-func GetQuestionsHandler(w http.ResponseWriter, r *http.Request) {
-	questionStore := NewQuestionStore(db.GetDB())
-	defer questionStore.Close()
-	questionStore.GetQuestionsHandler(w, r)
-}
-
-func GetQuestionHandler(w http.ResponseWriter, r *http.Request) {
-	questionStore := NewQuestionStore(db.GetDB())
-	defer questionStore.Close()
-	params := mux.Vars(r)
-	id := params["id"]
-
-	questionID, err := strconv.Atoi(id)
-	if err != nil {
-		body := fmt.Sprintf("Invalid ID: %v, and id is %s, params: %v", err, id, params["id"])
-		http.Error(w, body, http.StatusBadRequest)
-		return
-	}
-
-	question, err := questionStore.GetQuestion(questionID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(question)
-}
-
-func CreateQuestionHandler(w http.ResponseWriter, r *http.Request) {
-	questionStore := NewQuestionStore(db.GetDB())
-	defer questionStore.Close()
-
-	var question Question
-	err := json.NewDecoder(r.Body).Decode(&question)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	createdQuestion, err := questionStore.CreateQuestion(question.Content)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(createdQuestion)
-}
-
-func UpdateQuestionHandler(w http.ResponseWriter, r *http.Request) {
-	questionStore := NewQuestionStore(db.GetDB())
-	defer questionStore.Close()
-	params := mux.Vars(r)
-	id := params["id"]
-	content := r.FormValue("content") // Get the question content from the request
-
-	questionID, err := strconv.Atoi(id)
-	if err != nil {
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
-		return
-	}
-
-	err = questionStore.UpdateQuestion(questionID, content)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
-
-func DeleteQuestionHandler(w http.ResponseWriter, r *http.Request) {
-	questionStore := NewQuestionStore(db.GetDB())
-	defer questionStore.Close()
-	params := mux.Vars(r)
-	id := params["id"]
-
-	questionID, err := strconv.Atoi(id)
-	if err != nil {
-		http.Error(w, "Invalid ID", http.StatusBadRequest)
-		return
-	}
-	err = questionStore.DeleteQuestion(questionID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
 }

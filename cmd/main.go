@@ -12,12 +12,14 @@ import (
 func main() {
 	r := mux.NewRouter()
 
+	qc := controllers.NewQuestionController()
+
 	// Rutas para el CRM
-	r.HandleFunc("/questions", controllers.GetQuestions).Methods("GET")
-	r.HandleFunc("/questions/{id}", controllers.GetQuestion).Methods("GET")
-	r.HandleFunc("/questions", controllers.CreateQuestion).Methods("POST")
-	r.HandleFunc("/questions/{id}", controllers.UpdateQuestion).Methods("PUT")
-	r.HandleFunc("/questions/{id}", controllers.DeleteQuestion).Methods("DELETE")
+	r.HandleFunc("/questions", qc.GetQuestions).Methods("GET")
+	r.HandleFunc("/questions/{id}", qc.GetQuestion).Methods("GET")
+	r.HandleFunc("/questions", qc.CreateQuestion).Methods("POST")
+	r.HandleFunc("/questions/{id}", qc.UpdateQuestion).Methods("PUT")
+	r.HandleFunc("/questions/{id}", qc.DeleteQuestion).Methods("DELETE")
 
 	// Rutas para las tareas de validación
 	r.HandleFunc("/check_config", tasks.CheckConfig).Methods("POST")
